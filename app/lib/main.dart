@@ -39,7 +39,6 @@ import 'package:omi/providers/memories_provider.dart';
 import 'package:omi/providers/message_provider.dart';
 import 'package:omi/providers/onboarding_provider.dart';
 import 'package:omi/providers/task_integration_provider.dart';
-import 'package:omi/providers/calendar_provider.dart';
 import 'package:omi/providers/integration_provider.dart';
 import 'package:omi/providers/people_provider.dart';
 import 'package:omi/providers/speech_profile_provider.dart';
@@ -47,6 +46,7 @@ import 'package:omi/providers/sync_provider.dart';
 import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/providers/user_provider.dart';
 import 'package:omi/services/auth_service.dart';
+import 'package:omi/services/desktop_update_service.dart';
 import 'package:omi/services/notifications.dart';
 import 'package:omi/services/notifications/action_item_notification_handler.dart';
 import 'package:omi/services/services.dart';
@@ -162,6 +162,11 @@ Future _init() async {
     return true;
   };
 
+  // Initialize desktop updater
+  if (PlatformService.isDesktop) {
+    await DesktopUpdateService().initialize();
+  }
+
   await ServiceManager.instance().start();
   return;
 }
@@ -238,7 +243,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     try {
       final context = MyApp.navigatorKey.currentContext;
       if (context == null) return;
-      
+
       final captureProvider = Provider.of<CaptureProvider>(context, listen: false);
       if (captureProvider.recordingState == RecordingState.stop) {
         await captureProvider.streamSystemAudioRecording();
@@ -327,7 +332,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ChangeNotifierProvider(create: (context) => SyncProvider()),
           ChangeNotifierProvider(create: (context) => TaskIntegrationProvider()),
           ChangeNotifierProvider(create: (context) => IntegrationProvider()),
-          ChangeNotifierProvider(create: (context) => CalendarProvider(), lazy: false),
         ],
         builder: (context, child) {
           return WithForegroundTask(
